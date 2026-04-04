@@ -39,6 +39,7 @@ all-features = true
 workspace = true
 
 [features]
+json_expressions = ["datafusion-functions-json"]
 nested_expressions = ["datafusion-functions-nested"]
 # This feature is deprecated. Use the `nested_expressions` feature instead.
 array_expressions = ["nested_expressions"]
@@ -131,6 +132,7 @@ datafusion-expr = { workspace = true, default-features = false }
 datafusion-expr-common = { workspace = true }
 datafusion-functions = { workspace = true }
 datafusion-functions-aggregate = { workspace = true }
+datafusion-functions-json = { workspace = true, optional = true }
 datafusion-functions-nested = { workspace = true, default-features = false, optional = true }
 datafusion-functions-table = { workspace = true }
 datafusion-functions-window = { workspace = true }

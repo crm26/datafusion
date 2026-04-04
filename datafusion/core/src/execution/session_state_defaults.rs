@@ -27,6 +27,8 @@ use crate::datasource::file_format::json::JsonFormatFactory;
 use crate::datasource::file_format::parquet::ParquetFormatFactory;
 use crate::datasource::provider::DefaultTableFactory;
 use crate::execution::context::SessionState;
+#[cfg(feature = "json_expressions")]
+use crate::functions_json;
 #[cfg(feature = "nested_expressions")]
 use crate::functions_nested;
 use crate::{functions, functions_aggregate, functions_table, functions_window};
@@ -104,11 +106,17 @@ impl SessionStateDefaults {
 
     /// returns the list of default [`ScalarUDF`]s
     pub fn default_scalar_functions() -> Vec<Arc<ScalarUDF>> {
-        #[cfg_attr(not(feature = "nested_expressions"), expect(unused_mut))]
+        #[cfg_attr(
+            not(any(feature = "nested_expressions", feature = "json_expressions")),
+            expect(unused_mut)
+        )]
         let mut functions: Vec<Arc<ScalarUDF>> = functions::all_default_functions();
 
         #[cfg(feature = "nested_expressions")]
         functions.append(&mut functions_nested::all_default_nested_functions());
+
+        #[cfg(feature = "json_expressions")]
+        functions.append(&mut functions_json::all_default_json_functions());
 
         functions
     }
@@ -150,9 +158,10 @@ impl SessionStateDefaults {
         file_formats
     }
 
-    /// registers all builtin functions - scalar, array and aggregate
+    /// registers all builtin functions - scalar, array, json, and aggregate
     pub fn register_builtin_functions(state: &mut SessionState) {
         Self::register_scalar_functions(state);
+        Self::register_json_functions(state);
         Self::register_array_functions(state);
         Self::register_aggregate_functions(state);
     }
@@ -160,6 +169,15 @@ impl SessionStateDefaults {
     /// registers all the builtin scalar functions
     pub fn register_scalar_functions(state: &mut SessionState) {
         functions::register_all(state).expect("can not register built in functions");
+    }
+
+    /// registers all the builtin JSON functions
+    #[cfg_attr(not(feature = "json_expressions"), expect(unused_variables))]
+    pub fn register_json_functions(state: &mut SessionState) {
+        // register crate of JSON expressions (if enabled)
+        #[cfg(feature = "json_expressions")]
+        functions_json::register_all(state)
+            .expect("can not register JSON functions");
     }
 
     /// registers all the builtin array functions
