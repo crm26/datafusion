@@ -718,6 +718,7 @@
 //! * [datafusion_expr]: [`LogicalPlan`], [`Expr`] and related logical planning structure
 //! * [datafusion_functions]: Scalar function packages
 //! * [datafusion_functions_aggregate]: Aggregate functions such as `MIN`, `MAX`, `SUM`, etc
+//! * [datafusion_functions_json]: JSON scalar functions such as `json_get_str`
 //! * [datafusion_functions_nested]: Scalar function packages for `ARRAY`s, `MAP`s and `STRUCT`s
 //! * [datafusion_functions_table]: Table Functions such as `GENERATE_SERIES`
 //! * [datafusion_functions_window]: Window functions such as `ROW_NUMBER`, `RANK`, etc
@@ -863,6 +864,12 @@ pub mod sql {
 /// re-export of [`datafusion_functions`] crate
 pub mod functions {
     pub use datafusion_functions::*;
+}
+
+/// re-export of [`datafusion_functions_json`] crate, if "json_expressions" feature is enabled
+pub mod functions_json {
+    #[cfg(feature = "json_expressions")]
+    pub use datafusion_functions_json::*;
 }
 
 /// re-export of [`datafusion_functions_nested`] crate, if "nested_expressions" feature is enabled
