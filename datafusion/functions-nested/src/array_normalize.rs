@@ -24,8 +24,9 @@ use arrow::array::{
 };
 use arrow::buffer::OffsetBuffer;
 use arrow::datatypes::{
-    DataType, Field,
+    DataType,
     DataType::{FixedSizeList, LargeList, List, Null},
+    Field,
 };
 use datafusion_common::cast::as_generic_list_array;
 use datafusion_common::utils::{ListCoercion, coerced_type_with_base_type_only};
@@ -97,18 +98,14 @@ impl ScalarUDFImpl for ArrayNormalize {
     fn return_type(&self, arg_types: &[DataType]) -> Result<DataType> {
         // Return same list type but with Float64 elements
         match &arg_types[0] {
-            List(_) | FixedSizeList(..) | Null => Ok(List(Arc::new(Field::new_list_field(
-                DataType::Float64,
-                true,
-            )))),
+            List(_) | FixedSizeList(..) | Null => Ok(List(Arc::new(
+                Field::new_list_field(DataType::Float64, true),
+            ))),
             LargeList(_) => Ok(LargeList(Arc::new(Field::new_list_field(
                 DataType::Float64,
                 true,
             )))),
-            _ => exec_err!(
-                "array_normalize does not support type {}",
-                arg_types[0]
-            ),
+            _ => exec_err!("array_normalize does not support type {}", arg_types[0]),
         }
     }
 
@@ -232,10 +229,8 @@ fn compute_normalize(arr: Option<ArrayRef>) -> Result<Option<Float64Array>> {
         return Ok(None);
     }
 
-    let normalized: Float64Array = values
-        .iter()
-        .map(|v| v.map(|val| val / mag))
-        .collect();
+    let normalized: Float64Array =
+        values.iter().map(|v| v.map(|val| val / mag)).collect();
 
     Ok(Some(normalized))
 }

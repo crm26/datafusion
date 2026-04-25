@@ -83,10 +83,7 @@ impl InnerProduct {
     pub fn new() -> Self {
         Self {
             signature: Signature::user_defined(Volatility::Immutable),
-            aliases: vec![
-                "list_inner_product".to_string(),
-                "dot_product".to_string(),
-            ],
+            aliases: vec!["list_inner_product".to_string(), "dot_product".to_string()],
         }
     }
 }
@@ -141,9 +138,7 @@ fn inner_product_inner(args: &[ArrayRef]) -> Result<ArrayRef> {
         (List(_), List(_)) => general_inner_product::<i32>(args),
         (LargeList(_), LargeList(_)) => general_inner_product::<i64>(args),
         (arg_type1, arg_type2) => {
-            exec_err!(
-                "inner_product does not support types {arg_type1} and {arg_type2}"
-            )
+            exec_err!("inner_product does not support types {arg_type1} and {arg_type2}")
         }
     }
 }
@@ -265,10 +260,8 @@ mod tests {
 
     #[test]
     fn test_inner_product_basic() {
-        let arr1 =
-            make_f64_list_array(vec![Some(vec![Some(1.0), Some(2.0), Some(3.0)])]);
-        let arr2 =
-            make_f64_list_array(vec![Some(vec![Some(4.0), Some(5.0), Some(6.0)])]);
+        let arr1 = make_f64_list_array(vec![Some(vec![Some(1.0), Some(2.0), Some(3.0)])]);
+        let arr2 = make_f64_list_array(vec![Some(vec![Some(4.0), Some(5.0), Some(6.0)])]);
         let result = inner_product_inner(&[arr1, arr2]).unwrap();
         let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
         assert!((result.value(0) - 32.0).abs() < 1e-10);

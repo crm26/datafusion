@@ -24,8 +24,9 @@ use arrow::array::{
 };
 use arrow::buffer::OffsetBuffer;
 use arrow::datatypes::{
-    DataType, Field,
+    DataType,
     DataType::{FixedSizeList, LargeList, List, Null},
+    Field,
 };
 use datafusion_common::cast::{as_float64_array, as_generic_list_array};
 use datafusion_common::utils::{ListCoercion, coerced_type_with_base_type_only};
@@ -149,7 +150,9 @@ impl ScalarUDFImpl for ArrayAdd {
 fn array_add_inner(args: &[ArrayRef]) -> Result<ArrayRef> {
     let [array1, array2] = take_function_args("array_add", args)?;
     match (array1.data_type(), array2.data_type()) {
-        (List(_), List(_)) => general_array_binary_op::<i32>(args, "array_add", |a, b| a + b),
+        (List(_), List(_)) => {
+            general_array_binary_op::<i32>(args, "array_add", |a, b| a + b)
+        }
         (LargeList(_), LargeList(_)) => {
             general_array_binary_op::<i64>(args, "array_add", |a, b| a + b)
         }
@@ -231,10 +234,7 @@ impl ScalarUDFImpl for ArraySubtract {
                 DataType::Float64,
                 true,
             )))),
-            _ => exec_err!(
-                "array_subtract does not support type {}",
-                arg_types[0]
-            ),
+            _ => exec_err!("array_subtract does not support type {}", arg_types[0]),
         }
     }
 
@@ -279,9 +279,7 @@ fn array_subtract_inner(args: &[ArrayRef]) -> Result<ArrayRef> {
             general_array_binary_op::<i64>(args, "array_subtract", |a, b| a - b)
         }
         (arg_type1, arg_type2) => {
-            exec_err!(
-                "array_subtract does not support types {arg_type1} and {arg_type2}"
-            )
+            exec_err!("array_subtract does not support types {arg_type1} and {arg_type2}")
         }
     }
 }
@@ -367,14 +365,12 @@ impl ScalarUDFImpl for ArrayScale {
 
         let coercion = Some(&ListCoercion::FixedSizedListToList);
         let first = &arg_types[0];
-        let coerced_first = if matches!(
-            first,
-            Null | List(_) | LargeList(_) | FixedSizeList(..)
-        ) {
-            coerced_type_with_base_type_only(first, &DataType::Float64, coercion)
-        } else {
-            return plan_err!("{} does not support type {first}", self.name());
-        };
+        let coerced_first =
+            if matches!(first, Null | List(_) | LargeList(_) | FixedSizeList(..)) {
+                coerced_type_with_base_type_only(first, &DataType::Float64, coercion)
+            } else {
+                return plan_err!("{} does not support type {first}", self.name());
+            };
 
         // Second argument is scalar Float64
         Ok(vec![coerced_first, DataType::Float64])
@@ -489,10 +485,7 @@ fn compute_scale(
     }
 
     let values = convert_to_f64_array(&value)?;
-    let scaled: Float64Array = values
-        .iter()
-        .map(|v| v.map(|val| val * scalar))
-        .collect();
+    let scaled: Float64Array = values.iter().map(|v| v.map(|val| val * scalar)).collect();
 
     Ok(Some(scaled))
 }
