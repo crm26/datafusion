@@ -62,10 +62,6 @@ impl InputFileNameFunc {
 }
 
 impl ScalarUDFImpl for InputFileNameFunc {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn name(&self) -> &str {
         "input_file_name"
     }
